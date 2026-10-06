@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Agent Sandbox</title>
+  <style>body { font-family: monospace; background: #000; color: #0f0; padding: 20px; }</style>
+</head>
+<body>
+  <h1>Execution Boundary Control</h1>
+  <p>Agent Proposal: <span style="color: #ccc">npm run repair-service</span></p>
+  <button id="approve">Approve & Exec in Sandbox</button>
+  <pre id="output" style="margin-top: 20px; border: 1px solid #0f0; padding: 10px; height: 300px;"></pre>
+  <script>
+    document.getElementById('approve').onclick = async () => {
+      document.getElementById('output').innerText = 'Initializing isolated container...\n';
+      const res = await fetch('http://localhost:3000/api/execute', { 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: 'npm run repair-service', proposalId: 'PROP-42' })
+      });
+      const data = await res.json();
+      document.getElementById('output').innerText += data.output;
+    };
+  </script>
+</body>
+</html>
