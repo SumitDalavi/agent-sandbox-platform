@@ -61,6 +61,15 @@
     </div>
 
     <div class="card">
+      <h3>Policy Engine Editor</h3>
+      <p>Configure blocked tokens (comma separated):</p>
+      <div style="display: flex; gap: 10px;">
+        <input type="text" id="policy-input" placeholder="e.g., rm, wget, curl">
+        <button onclick="updatePolicy()">Update Policy</button>
+      </div>
+    </div>
+
+    <div class="card">
       <h3>3. Execution Audit Log</h3>
       <button onclick="fetchAudit()" style="margin-bottom: 10px;">Refresh Logs</button>
       <div id="audit-log" style="max-height: 200px; overflow-y: auto;">
@@ -174,6 +183,36 @@
         console.error(err);
       }
     }
+
+    async function loadPolicy() {
+      try {
+        const res = await fetch('http://localhost:3000/api/policy');
+        const data = await res.json();
+        document.getElementById('policy-input').value = data.tokens.join(', ');
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function updatePolicy() {
+      const val = document.getElementById('policy-input').value;
+      const tokens = val.split(',').map(s => s.trim()).filter(s => s);
+      try {
+        const res = await fetch('http://localhost:3000/api/policy', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer valid-token' },
+          body: JSON.stringify({ tokens })
+        });
+        if (res.ok) alert('Policy updated');
+        else alert('Failed to update policy');
+      } catch (err) {
+        alert('Error updating policy');
+      }
+    }
+
+    // Init
+    loadPolicy();
+    fetchAudit();
   </script>
 </body>
 </html>

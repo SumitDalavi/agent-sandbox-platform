@@ -68,10 +68,14 @@ export class Sandbox {
       let totalBytes = 0;
       const MAX_BYTES = 1024 * 1024; // 1MB limit
       
+      const forceRemove = () => {
+         container.remove({ force: true }).catch(() => {});
+      };
+      
       const timeout = setTimeout(() => {
          stream.destroy();
-         container.kill().catch(() => {});
-         reject(new Error("Execution timed out (5s). Container killed."));
+         forceRemove();
+         reject(new Error("Execution timed out (5s). Container removed."));
       }, 5000);
 
       const handleChunk = (chunk: Buffer, isErr: boolean) => {
@@ -79,8 +83,8 @@ export class Sandbox {
         if (totalBytes > MAX_BYTES) {
            clearTimeout(timeout);
            stream.destroy();
-           container.kill().catch(() => {});
-           reject(new Error("Output limit exceeded. Container killed."));
+           forceRemove();
+           reject(new Error("Output limit exceeded. Container removed."));
            return;
         }
         if (isErr) stderr += chunk.toString();

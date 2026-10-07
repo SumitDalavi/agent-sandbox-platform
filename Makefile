@@ -9,7 +9,8 @@ dev:
 	npm run start --workspace=api
 
 test:
-	npm run test
+	node test.js
 
 clean:
 	npm run clean
+
