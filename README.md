@@ -83,3 +83,8 @@ Refactored test.js to use tsx, implemented Docker boundary execution tests, and 
 
 * Acceptance tests have been upgraded from static string-checks to end-to-end behavioral verifications.
 * API boundaries and execution layers (Docker, WebSockets, Temporal, etc.) are now explicitly exercised in tests.
+
+## Maturity Claims
+- **Implemented (Tested):** API isolation, launcher parity (tsx/ts-node), explicit failure propagation via simulate-cleanup-failure.
+- **Mocked:** The Docker failure simulation is injected during CI testing.
+- **Deferred:** Rootless containers and advanced network firewalls.
