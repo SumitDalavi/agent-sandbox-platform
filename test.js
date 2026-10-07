@@ -50,9 +50,8 @@ async function runTests() {
     console.log("Creating Sandbox...");
     const createRes = await fetchJson('/sandbox', 'POST');
     if (createRes.status !== 200 || !createRes.data.containerId) {
-        if (createRes.status === 500 && JSON.stringify(createRes.data).includes('docker_engine')) {
-            console.log("⚠️ Docker is not running. Reached docker engine boundary correctly!");
-            console.log("✅ Agent Sandbox Platform passed behavioral tests.");
+        if (createRes.status === 500 && (JSON.stringify(createRes.data).includes('docker_engine') || JSON.stringify(createRes.data).includes('connect ENOENT'))) {
+            console.log("⚠️ SKIPPED: Docker is unavailable. Integration suite aborted.");
             apiProcess.kill();
             process.exit(0);
         }

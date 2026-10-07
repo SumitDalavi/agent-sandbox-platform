@@ -69,7 +69,19 @@ export class Sandbox {
       const MAX_BYTES = 1024 * 1024; // 1MB limit
       
       const forceRemove = async () => {
-         try { await container.remove({ force: true }); } catch (e) {}
+         try { 
+           await container.remove({ force: true }); 
+         } catch (e) {
+           try {
+             await container.inspect();
+             throw new Error(`Failed to remove container ${container.id}, it is still running.`);
+           } catch (inspectError: any) {
+             // 404 means it's gone
+             if (inspectError.statusCode !== 404) {
+               throw new Error(`Cleanup failure: could not confirm removal of ${container.id}`);
+             }
+           }
+         }
       };
       
       const timeout = setTimeout(async () => {
@@ -117,6 +129,17 @@ export class Sandbox {
 
   async destroy(): Promise<void> {
     const container = docker.getContainer(this.containerId);
-    await container.remove({ force: true });
+    try {
+      await container.remove({ force: true });
+    } catch (e: any) {
+      if (e.statusCode !== 404) {
+         try {
+             await container.inspect();
+             throw new Error(`Failed to remove container ${this.containerId}, it is still running.`);
+         } catch (inspectError: any) {
+             if (inspectError.statusCode !== 404) throw new Error(`Cleanup failure: could not confirm removal of ${this.containerId}`);
+         }
+      }
+    }
   }
 }
