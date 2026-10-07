@@ -5,9 +5,23 @@ async function runTests() {
   console.log("Starting API for Behavioral Tests...");
   const { exec } = require('child_process');
   const apiProcess = exec('npx tsx api/src/index.ts');
-  
-  // Give API 8 seconds to spin up
-  await new Promise(r => setTimeout(r, 8000));
+  let isReady = false;
+  for (let i = 0; i < 20; i++) {
+     try {
+       const res = await new Promise((res, rej) => {
+         const req = http.get('http://127.0.0.1:3000/api/policy', r => res(r.statusCode));
+         req.on('error', rej);
+       });
+       if (res === 200) { isReady = true; break; }
+     } catch(e) {}
+     await new Promise(r => setTimeout(r, 1000));
+  }
+  if (!isReady) {
+     console.error("❌ Sandbox API failed to start after 20s");
+     apiProcess.kill();
+     process.exit(1);
+  }
+
   console.log("Running Behavioral Tests for Agent Sandbox Platform...");
 
   const fetchJson = (path, method = 'GET', body = null, token = 'valid-token') => {
@@ -94,6 +108,13 @@ async function runTests() {
     // Verify it was removed
     const verifyDel = await fetchJson(`/sandbox/${id1}`, 'DELETE');
     if (verifyDel.status !== 404) throw new Error("Timeout did not remove sandbox from API inventory!");
+    
+    // Direct Docker inspection assertion proving actual container is absent
+    const { spawnSync } = require('child_process');
+    const dockerCheck = spawnSync('docker', ['inspect', id1]);
+    if (dockerCheck.status === 0) {
+       throw new Error(`Cleanup failure: Docker container ${id1} is still present!`);
+    }
 
     // Cleanup
     await fetchJson(`/sandbox/${id2}`, 'DELETE');

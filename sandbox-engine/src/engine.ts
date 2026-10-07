@@ -86,8 +86,12 @@ export class Sandbox {
       
       const timeout = setTimeout(async () => {
          stream.destroy();
-         await forceRemove();
-         reject(new Error("Execution timed out (5s). Container removed."));
+         try {
+           await forceRemove();
+           reject(new Error("Execution timed out (5s). Container removed."));
+         } catch (e) {
+           reject(e);
+         }
       }, 5000);
 
       const handleChunk = async (chunk: Buffer, isErr: boolean) => {
@@ -95,8 +99,12 @@ export class Sandbox {
         if (totalBytes > MAX_BYTES) {
            clearTimeout(timeout);
            stream.destroy();
-           await forceRemove();
-           reject(new Error("Output limit exceeded. Container removed."));
+           try {
+             await forceRemove();
+             reject(new Error("Output limit exceeded. Container removed."));
+           } catch (e) {
+             reject(e);
+           }
            return;
         }
         if (isErr) stderr += chunk.toString();
