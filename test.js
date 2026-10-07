@@ -120,6 +120,7 @@ async function runTests() {
     await fetchJson(`/sandbox/${id2}`, 'DELETE');
     console.log("✅ Agent Sandbox Platform passed behavioral tests.");
     apiProcess.kill();
+    process.exit(0);
   } catch (err) {
     console.error("❌ Test Failed:", err);
     apiProcess.kill();
