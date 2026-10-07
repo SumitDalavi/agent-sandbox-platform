@@ -12,21 +12,25 @@ export class Sandbox {
 
   static async create(): Promise<Sandbox> {
     try {
-      // Create an Alpine container that sleeps infinitely
       const container = await docker.createContainer({
         Image: 'alpine:latest',
         Cmd: ['tail', '-f', '/dev/null'],
+        User: '1000:1000',
         HostConfig: {
-          NetworkMode: 'none', // Strict network isolation
-          Memory: 128 * 1024 * 1024, // 128MB limit
-          Nanocpus: 1000000000, // 1 CPU
+          NetworkMode: 'none',
+          Memory: 128 * 1024 * 1024,
+          Nanocpus: 1000000000,
+          PidsLimit: 32,
+          ReadonlyRootfs: true,
+          CapDrop: ['ALL'],
+          SecurityOpt: ['no-new-privileges:true'],
+          Tmpfs: { '/tmp': 'rw,size=32m,mode=1777' }
         },
       });
       await container.start();
       return new Sandbox(container.id);
     } catch (err: any) {
       if (err.statusCode === 404) {
-        // Automatically pull the image if missing
         console.log("alpine:latest not found, pulling...");
         await new Promise((resolve, reject) => {
           docker.pull('alpine:latest', (err: Error, stream: NodeJS.ReadableStream) => {
@@ -47,9 +51,11 @@ export class Sandbox {
 
     const container = docker.getContainer(this.containerId);
     
-    // Use sh -c to evaluate the command
+    // Split command strictly into executable + args, bypassing arbitrary shell execution
+    const args = cmd.trim().split(/\s+/);
+    
     const exec = await container.exec({
-      Cmd: ['sh', '-c', cmd],
+      Cmd: args,
       AttachStdout: true,
       AttachStderr: true,
     });
@@ -59,18 +65,29 @@ export class Sandbox {
     return new Promise((resolve, reject) => {
       let stdout = '';
       let stderr = '';
+      let totalBytes = 0;
+      const MAX_BYTES = 1024 * 1024; // 1MB limit
       
-      // Dockerode multiplexes stdout and stderr
+      const handleChunk = (chunk: Buffer, isErr: boolean) => {
+        totalBytes += chunk.length;
+        if (totalBytes > MAX_BYTES) {
+           stream.destroy(new Error("Output limit exceeded"));
+           return;
+        }
+        if (isErr) stderr += chunk.toString();
+        else stdout += chunk.toString();
+      };
+
       docker.modem.demuxStream(stream, {
-        write: (chunk: Buffer) => { stdout += chunk.toString(); }
+        write: (chunk: Buffer) => handleChunk(chunk, false)
       }, {
-        write: (chunk: Buffer) => { stderr += chunk.toString(); }
+        write: (chunk: Buffer) => handleChunk(chunk, true)
       });
       
       stream.on('end', () => {
         resolve({ stdout, stderr });
       });
-      stream.on('error', reject);
+      stream.on('error', (err) => reject(err));
     });
   }
 

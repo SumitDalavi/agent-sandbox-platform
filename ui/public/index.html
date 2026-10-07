@@ -99,10 +99,18 @@
       outputEl.innerText = 'Executing...';
       
       try {
+        // Server-side proposal generation
+        const propRes = await fetch(`http://localhost:3000/api/sandbox/${activeContainerId}/propose`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cmd })
+        });
+        const propData = await propRes.json();
+        
         const res = await fetch(`http://localhost:3000/api/sandbox/${activeContainerId}/execute`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ cmd, proposalHash: 'mock-hash-from-ui' })
+          body: JSON.stringify({ cmd, proposalHash: propData.proposalHash })
         });
         const data = await res.json();
         
@@ -121,10 +129,14 @@
       try {
         const res = await fetch('http://localhost:3000/api/audit');
         const data = await res.json();
+        const escapeHTML = (str) => str ? str.replace(/[&<>'"]/g, tag => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+          }[tag])) : '';
+
         const logHtml = data.logs.reverse().map(l => {
           const status = l.allowed ? '<span class="allow">[ALLOW]</span>' : '<span class="deny">[DENY]</span>';
-          return `<div class="log-entry">${new Date(l.timestamp).toLocaleTimeString()} ${status} ${l.cmd} 
-            ${l.error ? `- ${l.error}` : ''}</div>`;
+          return `<div class="log-entry">${new Date(l.timestamp).toLocaleTimeString()} ${status} ${escapeHTML(l.cmd)} 
+            ${l.error ? `- ${escapeHTML(l.error)}` : ''}</div>`;
         }).join('');
         document.getElementById('audit-log').innerHTML = logHtml;
       } catch (err) {

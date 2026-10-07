@@ -20,6 +20,15 @@ app.post('/api/sandbox', async (req, res) => {
   }
 });
 
+import crypto from 'crypto';
+
+app.post('/api/sandbox/:id/propose', (req, res) => {
+  const { cmd } = req.body;
+  if (!cmd) return res.status(400).json({ error: 'cmd is required' });
+  const proposalHash = crypto.createHash('sha256').update(cmd).digest('hex');
+  res.json({ proposalHash });
+});
+
 app.post('/api/sandbox/:id/execute', async (req, res) => {
   const { id } = req.params;
   const { cmd, proposalHash } = req.body;
@@ -31,6 +40,10 @@ app.post('/api/sandbox/:id/execute', async (req, res) => {
   // Bind execution to proposal hash to ensure what was approved is what runs
   if (!proposalHash) {
     return res.status(400).json({ error: 'proposalHash is required' });
+  }
+  const expectedHash = crypto.createHash('sha256').update(cmd).digest('hex');
+  if (proposalHash !== expectedHash) {
+    return res.status(403).json({ error: 'Invalid proposalHash. Execution parameters do not match approval.' });
   }
 
   const sandbox = sandboxes[id];

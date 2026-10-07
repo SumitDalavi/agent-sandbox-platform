@@ -6,5 +6,9 @@
     "express": "^4.19.2",
     "cors": "^2.8.5",
     "sandbox-engine": "*"
+  },
+  "scripts": {
+    "start": "npx ts-node src/index.ts",
+    "build": "echo \"done\""
   }
 }

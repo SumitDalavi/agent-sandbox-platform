@@ -4,5 +4,8 @@
   "main": "src/engine.js",
   "dependencies": {
     "dockerode": "^4.0.0"
+  },
+  "scripts": {
+    "build": "echo \"done\""
   }
 }
