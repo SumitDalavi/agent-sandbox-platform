@@ -1,7 +1,22 @@
+/**
+ * A robust policy engine that tokenizes commands rather than using naive substring matching.
+ */
 export function evaluatePolicy(command: string): boolean {
-  const blocked = ['rm -rf', 'curl', 'wget', 'nc', 'bash -i'];
-  for (const b of blocked) {
-    if (command.includes(b)) return false;
+  // Simple tokenizer: split on whitespace and shell metacharacters
+  const tokens = command.split(/[\s|&;()<>]+/);
+  
+  const blockedTokens = ['rm', 'curl', 'wget', 'nc', 'bash', 'sh', 'netcat', 'apk'];
+  
+  for (const token of tokens) {
+    if (blockedTokens.includes(token)) {
+      return false; // Deny
+    }
   }
-  return true;
+  
+  // Specific dangerous paths
+  if (command.includes('/etc/shadow') || command.includes('/root')) {
+    return false;
+  }
+
+  return true; // Allow
 }
