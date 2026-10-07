@@ -6,8 +6,8 @@ async function runTests() {
   const { exec } = require('child_process');
   const apiProcess = exec('npx tsx api/src/index.ts');
   
-  // Give API 4 seconds to spin up
-  await new Promise(r => setTimeout(r, 4000));
+  // Give API 8 seconds to spin up
+  await new Promise(r => setTimeout(r, 8000));
   console.log("Running Behavioral Tests for Agent Sandbox Platform...");
 
   const fetchJson = (path, method = 'GET', body = null, token = 'valid-token') => {
