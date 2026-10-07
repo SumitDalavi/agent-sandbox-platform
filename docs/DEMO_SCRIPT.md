@@ -11,3 +11,4 @@
    - The Policy Engine will intercept and block the command (403 Forbidden) before Docker is even called.
 6. **Audit Logs**: Click "Refresh Logs" to see the history of ALLOW/DENY decisions.
 7. **Cleanup**: Click "Destroy Active Sandbox".
+8. **Failure Simulation**: Create a new sandbox, then click "Simulate Cleanup Failure". The backend will force a persistent failure state, proving robust error propagation during deletion.
