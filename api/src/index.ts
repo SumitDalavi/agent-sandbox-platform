@@ -9,6 +9,7 @@ app.use(cors());
 // In-memory store for demo
 const sandboxes: Record<string, Sandbox> = {};
 const auditLog: Array<{ timestamp: Date, containerId: string, cmd: string, allowed: boolean, stdout?: string, stderr?: string, error?: string }> = [];
+const proposals: Record<string, { cmd: string, approved: boolean, approver?: string, expiresAt: number }> = {};
 
 app.post('/api/sandbox', async (req, res) => {
   try {
@@ -25,8 +26,25 @@ import crypto from 'crypto';
 app.post('/api/sandbox/:id/propose', (req, res) => {
   const { cmd } = req.body;
   if (!cmd) return res.status(400).json({ error: 'cmd is required' });
-  const proposalHash = crypto.createHash('sha256').update(cmd).digest('hex');
+  const proposalHash = crypto.createHash('sha256').update(cmd + Date.now().toString()).digest('hex');
+  
+  proposals[proposalHash] = {
+    cmd,
+    approved: false,
+    expiresAt: Date.now() + 10 * 60 * 1000 // 10 minutes
+  };
+  
   res.json({ proposalHash });
+});
+
+app.post('/api/sandbox/:id/approve', (req, res) => {
+  const { proposalHash, approver } = req.body;
+  if (!proposals[proposalHash]) return res.status(404).json({ error: 'Proposal not found' });
+  if (!approver) return res.status(401).json({ error: 'Approver identity required' });
+  
+  proposals[proposalHash].approved = true;
+  proposals[proposalHash].approver = approver;
+  res.json({ status: 'approved' });
 });
 
 app.post('/api/sandbox/:id/execute', async (req, res) => {
@@ -37,14 +55,25 @@ app.post('/api/sandbox/:id/execute', async (req, res) => {
     return res.status(404).json({ error: 'Sandbox not found' });
   }
 
-  // Bind execution to proposal hash to ensure what was approved is what runs
-  if (!proposalHash) {
-    return res.status(400).json({ error: 'proposalHash is required' });
+  const proposal = proposals[proposalHash];
+  if (!proposal) {
+    return res.status(404).json({ error: 'Proposal not found or invalid hash.' });
   }
-  const expectedHash = crypto.createHash('sha256').update(cmd).digest('hex');
-  if (proposalHash !== expectedHash) {
-    return res.status(403).json({ error: 'Invalid proposalHash. Execution parameters do not match approval.' });
+  
+  if (!proposal.approved) {
+    return res.status(403).json({ error: 'Proposal has not been approved.' });
   }
+  
+  if (proposal.cmd !== cmd) {
+    return res.status(403).json({ error: 'Command does not match approved proposal.' });
+  }
+  
+  if (Date.now() > proposal.expiresAt) {
+    return res.status(403).json({ error: 'Proposal has expired.' });
+  }
+  
+  // Burn the proposal (one-time use)
+  delete proposals[proposalHash];
 
   const sandbox = sandboxes[id];
   try {

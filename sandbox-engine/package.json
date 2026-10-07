@@ -6,6 +6,6 @@
     "dockerode": "^4.0.0"
   },
   "scripts": {
-    "build": "echo \"done\""
+    "build": "npx tsc"
   }
 }

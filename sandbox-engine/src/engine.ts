@@ -19,7 +19,7 @@ export class Sandbox {
         HostConfig: {
           NetworkMode: 'none',
           Memory: 128 * 1024 * 1024,
-          Nanocpus: 1000000000,
+          NanoCpus: 1000000000,
           PidsLimit: 32,
           ReadonlyRootfs: true,
           CapDrop: ['ALL'],
@@ -35,7 +35,7 @@ export class Sandbox {
         await new Promise((resolve, reject) => {
           docker.pull('alpine:latest', (err: Error, stream: NodeJS.ReadableStream) => {
             if (err) return reject(err);
-            docker.modem.followProgress(stream, (err, res) => err ? reject(err) : resolve(res));
+            docker.modem.followProgress(stream, (err: any, res: any) => err ? reject(err) : resolve(res));
           });
         });
         return Sandbox.create();
@@ -68,10 +68,19 @@ export class Sandbox {
       let totalBytes = 0;
       const MAX_BYTES = 1024 * 1024; // 1MB limit
       
+      const timeout = setTimeout(() => {
+         stream.destroy();
+         container.kill().catch(() => {});
+         reject(new Error("Execution timed out (5s). Container killed."));
+      }, 5000);
+
       const handleChunk = (chunk: Buffer, isErr: boolean) => {
         totalBytes += chunk.length;
         if (totalBytes > MAX_BYTES) {
-           stream.destroy(new Error("Output limit exceeded"));
+           clearTimeout(timeout);
+           stream.destroy();
+           container.kill().catch(() => {});
+           reject(new Error("Output limit exceeded. Container killed."));
            return;
         }
         if (isErr) stderr += chunk.toString();
@@ -79,15 +88,25 @@ export class Sandbox {
       };
 
       docker.modem.demuxStream(stream, {
-        write: (chunk: Buffer) => handleChunk(chunk, false)
-      }, {
-        write: (chunk: Buffer) => handleChunk(chunk, true)
-      });
+        write: (chunk: any) => { handleChunk(chunk as Buffer, false); return true; }
+      } as any, {
+        write: (chunk: any) => { handleChunk(chunk as Buffer, true); return true; }
+      } as any);
       
-      stream.on('end', () => {
+      stream.on('end', async () => {
+        clearTimeout(timeout);
+        try {
+          const info = await exec.inspect();
+          if (info.ExitCode !== 0) {
+            stderr += `\nProcess exited with code ${info.ExitCode}`;
+          }
+        } catch (e) {}
         resolve({ stdout, stderr });
       });
-      stream.on('error', (err) => reject(err));
+      stream.on('error', (err: any) => {
+        clearTimeout(timeout);
+        reject(err);
+      });
     });
   }
 

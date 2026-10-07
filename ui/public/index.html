@@ -50,8 +50,12 @@
     <div class="card">
       <h3>2. Interactive Execution (with Policy Engine)</h3>
       <div style="display: flex; gap: 10px;">
-        <input type="text" id="cmd-input" placeholder="Enter command (e.g., ls -la, echo hello, or rm -rf /)" onkeypress="if(event.key === 'Enter') execCmd()">
-        <button onclick="execCmd()">Execute</button>
+        <input type="text" id="cmd-input" placeholder="Enter command (e.g., ls -la, echo hello, or rm -rf /)" onkeypress="if(event.key === 'Enter') proposeCmd()">
+        <button onclick="proposeCmd()">Propose</button>
+      </div>
+      <div id="approval-section" style="display: none; margin-top: 10px; padding: 10px; border: 1px solid var(--accent); border-radius: 4px;">
+        <p><strong>Proposed Command:</strong> <span id="prop-cmd"></span></p>
+        <button onclick="approveAndExecute()" class="btn-danger">Approve & Execute</button>
       </div>
       <pre id="output">Output will appear here...</pre>
     </div>
@@ -67,6 +71,7 @@
 
   <script>
     let activeContainerId = null;
+    let pendingProposal = null;
 
     async function createSandbox() {
       try {
@@ -92,14 +97,13 @@
       }
     }
 
-    async function execCmd() {
+    async function proposeCmd() {
       if (!activeContainerId) return alert('Please spin up a sandbox first.');
       const cmd = document.getElementById('cmd-input').value;
       const outputEl = document.getElementById('output');
-      outputEl.innerText = 'Executing...';
+      outputEl.innerText = 'Proposing...';
       
       try {
-        // Server-side proposal generation
         const propRes = await fetch(`http://localhost:3000/api/sandbox/${activeContainerId}/propose`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -107,10 +111,34 @@
         });
         const propData = await propRes.json();
         
+        pendingProposal = { cmd, hash: propData.proposalHash };
+        document.getElementById('prop-cmd').innerText = cmd;
+        document.getElementById('approval-section').style.display = 'block';
+        outputEl.innerText = 'Proposal pending approval...';
+      } catch (err) {
+        outputEl.innerText = `Error: ${err.message}`;
+      }
+    }
+
+    async function approveAndExecute() {
+      if (!pendingProposal || !activeContainerId) return;
+      const { cmd, hash } = pendingProposal;
+      const outputEl = document.getElementById('output');
+      outputEl.innerText = 'Approving and Executing...';
+      
+      try {
+        // Approve
+        await fetch(`http://localhost:3000/api/sandbox/${activeContainerId}/approve`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ proposalHash: hash, approver: 'ui-admin' })
+        });
+
+        // Execute
         const res = await fetch(`http://localhost:3000/api/sandbox/${activeContainerId}/execute`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ cmd, proposalHash: propData.proposalHash })
+          body: JSON.stringify({ cmd, proposalHash: hash })
         });
         const data = await res.json();
         
@@ -119,6 +147,9 @@
         } else {
           outputEl.innerText = `BLOCKED: ${data.error}`;
         }
+        
+        document.getElementById('approval-section').style.display = 'none';
+        pendingProposal = null;
         fetchAudit();
       } catch (err) {
         outputEl.innerText = `Error: ${err.message}`;

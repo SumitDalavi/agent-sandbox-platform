@@ -9,6 +9,6 @@
   },
   "scripts": {
     "start": "npx ts-node src/index.ts",
-    "build": "echo \"done\""
+    "build": "npx tsc"
   }
 }
