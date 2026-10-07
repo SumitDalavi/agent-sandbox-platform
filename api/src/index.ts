@@ -108,6 +108,18 @@ app.post('/api/sandbox/:id/execute', authMiddleware, async (req, res) => {
   }
 });
 
+app.post('/api/sandbox/:id/simulate-cleanup-failure', authMiddleware, (req, res) => {
+  const { id } = req.params;
+  const sandbox = sandboxes[id];
+  if (!sandbox) return res.status(404).json({ error: 'Sandbox not found' });
+  
+  // Monkey-patch to simulate Docker failure
+  sandbox.destroy = async () => {
+    throw new Error(`Cleanup failure: could not confirm removal of ${id}`);
+  };
+  res.json({ status: 'simulated_failure_armed' });
+});
+
 app.delete('/api/sandbox/:id', authMiddleware, async (req, res) => {
   const { id } = req.params;
   if (!sandboxes[id]) {

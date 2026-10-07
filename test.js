@@ -1,10 +1,10 @@
 const http = require('http');
 const { spawn } = require('child_process');
 
-async function runTests() {
-  console.log("Starting API for Behavioral Tests...");
-  const { exec } = require('child_process');
-  const apiProcess = exec('npx tsx api/src/index.ts');
+async function runSuite(launcherCommand) {
+  console.log(`Starting API with launcher: ${launcherCommand}...`);
+  const { exec, spawnSync } = require('child_process');
+  const apiProcess = exec(launcherCommand);
   let isReady = false;
   for (let i = 0; i < 20; i++) {
      try {
@@ -17,7 +17,7 @@ async function runTests() {
      await new Promise(r => setTimeout(r, 1000));
   }
   if (!isReady) {
-     console.error("❌ Sandbox API failed to start after 20s");
+     console.error(`❌ Sandbox API failed to start after 20s for ${launcherCommand}`);
      apiProcess.kill();
      process.exit(1);
   }
@@ -110,22 +110,40 @@ async function runTests() {
     if (verifyDel.status !== 404) throw new Error("Timeout did not remove sandbox from API inventory!");
     
     // Direct Docker inspection assertion proving actual container is absent
-    const { spawnSync } = require('child_process');
     const dockerCheck = spawnSync('docker', ['inspect', id1]);
     if (dockerCheck.status === 0) {
        throw new Error(`Cleanup failure: Docker container ${id1} is still present!`);
     }
 
+    // 9. Cleanup failure propagation
+    console.log("Testing cleanup failure propagation...");
+    const createFailRes = await fetchJson('/sandbox', 'POST');
+    const id3 = createFailRes.data.containerId;
+    
+    await fetchJson(`/sandbox/${id3}/simulate-cleanup-failure`, 'POST');
+    
+    const delFailRes = await fetchJson(`/sandbox/${id3}`, 'DELETE');
+    if (delFailRes.status !== 500 || !delFailRes.data.error.includes("could not confirm removal")) {
+        throw new Error(`API did not properly return cleanup failure error! Status: ${delFailRes.status}`);
+    }
+
     // Cleanup
     await fetchJson(`/sandbox/${id2}`, 'DELETE');
-    console.log("✅ Agent Sandbox Platform passed behavioral tests.");
+    console.log(`✅ Passed for ${launcherCommand}`);
     apiProcess.kill();
-    process.exit(0);
   } catch (err) {
-    console.error("❌ Test Failed:", err);
+    console.error(`❌ Test Failed for ${launcherCommand}:`, err);
     apiProcess.kill();
     process.exit(1);
   }
+}
+
+async function runTests() {
+  await runSuite('npx tsx api/src/index.ts');
+  await new Promise(r => setTimeout(r, 2000));
+  await runSuite('npx ts-node api/src/index.ts');
+  console.log("✅ Agent Sandbox Platform passed all behavioral tests for both launchers.");
+  process.exit(0);
 }
 
 runTests();
