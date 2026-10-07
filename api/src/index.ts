@@ -62,7 +62,7 @@ app.post('/api/sandbox/:id/approve', authMiddleware, (req, res) => {
   res.json({ status: 'approved' });
 });
 
-app.post('/api/sandbox/:id/execute', async (req, res) => {
+app.post('/api/sandbox/:id/execute', authMiddleware, async (req, res) => {
   const { id } = req.params;
   const { cmd, proposalHash } = req.body;
   
@@ -100,12 +100,15 @@ app.post('/api/sandbox/:id/execute', async (req, res) => {
     auditLog.push({ timestamp: new Date(), containerId: id, cmd, allowed: true, stdout, stderr });
     res.json({ status: 'success', stdout, stderr });
   } catch (err: any) {
+    if (err.message.includes('removed')) {
+      delete sandboxes[id];
+    }
     auditLog.push({ timestamp: new Date(), containerId: id, cmd, allowed: false, error: err.message });
     res.status(403).json({ error: err.message }); // 403 for policy violations
   }
 });
 
-app.delete('/api/sandbox/:id', async (req, res) => {
+app.delete('/api/sandbox/:id', authMiddleware, async (req, res) => {
   const { id } = req.params;
   if (!sandboxes[id]) {
     return res.status(404).json({ error: 'Sandbox not found' });

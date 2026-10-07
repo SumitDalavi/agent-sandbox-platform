@@ -68,22 +68,22 @@ export class Sandbox {
       let totalBytes = 0;
       const MAX_BYTES = 1024 * 1024; // 1MB limit
       
-      const forceRemove = () => {
-         container.remove({ force: true }).catch(() => {});
+      const forceRemove = async () => {
+         try { await container.remove({ force: true }); } catch (e) {}
       };
       
-      const timeout = setTimeout(() => {
+      const timeout = setTimeout(async () => {
          stream.destroy();
-         forceRemove();
+         await forceRemove();
          reject(new Error("Execution timed out (5s). Container removed."));
       }, 5000);
 
-      const handleChunk = (chunk: Buffer, isErr: boolean) => {
+      const handleChunk = async (chunk: Buffer, isErr: boolean) => {
         totalBytes += chunk.length;
         if (totalBytes > MAX_BYTES) {
            clearTimeout(timeout);
            stream.destroy();
-           forceRemove();
+           await forceRemove();
            reject(new Error("Output limit exceeded. Container removed."));
            return;
         }
@@ -102,7 +102,8 @@ export class Sandbox {
         try {
           const info = await exec.inspect();
           if (info.ExitCode !== 0) {
-            stderr += `\nProcess exited with code ${info.ExitCode}`;
+            reject(new Error(`Process exited with code ${info.ExitCode}. STDERR: ${stderr}`));
+            return;
           }
         } catch (e) {}
         resolve({ stdout, stderr });

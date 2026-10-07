@@ -84,7 +84,7 @@
 
     async function createSandbox() {
       try {
-        const res = await fetch('http://localhost:3000/api/sandbox', { method: 'POST' });
+        const res = await fetch('http://localhost:3000/api/sandbox', { method: 'POST', headers: { 'Authorization': 'Bearer valid-token' } });
         const data = await res.json();
         activeContainerId = data.containerId;
         document.getElementById('active-id').innerText = activeContainerId;
@@ -97,7 +97,7 @@
     async function destroySandbox() {
       if (!activeContainerId) return alert('No active sandbox.');
       try {
-        await fetch(`http://localhost:3000/api/sandbox/${activeContainerId}`, { method: 'DELETE' });
+        await fetch(`http://localhost:3000/api/sandbox/${activeContainerId}`, { method: 'DELETE', headers: { 'Authorization': 'Bearer valid-token' } });
         activeContainerId = null;
         document.getElementById('active-id').innerText = 'None';
         alert('Sandbox destroyed.');
@@ -115,7 +115,7 @@
       try {
         const propRes = await fetch(`http://localhost:3000/api/sandbox/${activeContainerId}/propose`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer valid-token' },
           body: JSON.stringify({ cmd })
         });
         const propData = await propRes.json();
@@ -139,14 +139,14 @@
         // Approve
         await fetch(`http://localhost:3000/api/sandbox/${activeContainerId}/approve`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer valid-token' },
           body: JSON.stringify({ proposalHash: hash, approver: 'ui-admin' })
         });
 
         // Execute
         const res = await fetch(`http://localhost:3000/api/sandbox/${activeContainerId}/execute`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer valid-token' },
           body: JSON.stringify({ cmd, proposalHash: hash })
         });
         const data = await res.json();
