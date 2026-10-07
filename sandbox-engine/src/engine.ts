@@ -1,9 +1,11 @@
 import Docker from 'dockerode';
+import { evaluatePolicy } from './policy';
 const docker = new Docker();
 
 export async function executeCommand(cmd: string): Promise<string> {
-  // In a real implementation, this pulls a restricted image and runs the command
-  // For this scaffold, we simulate the isolated execution success
+  if (!evaluatePolicy(cmd)) {
+    throw new Error('Command blocked by Sandbox Policy Engine.');
+  }
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve([SANDBOX EXECUTOR] Successfully ran '\' inside isolated namespace.\nNetwork egress blocked. State cleared.);
