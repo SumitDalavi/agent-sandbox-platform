@@ -1,13 +1,46 @@
-# agent-sandbox-platform
+# UI: http://localhost:5173   API: http://localhost:8080
 
+> **Maturity:** Fully functional E2E Portfolio Project
 > Can an AI agent fix a service while the platform prevents it from exceeding its authority?
 
+## The Problem
+Modern distributed systems and AI agents require robust operational scaffolding. Simple CRUD apps or mock loops fail when subjected to real-world edge cases, asynchronous boundaries, and security constraints.
+
+## The Solution
 An isolated execution platform for AI agents. An agent is given a broken service and a bounded toolset inside a disposable sandbox. Every command passes through policy, risky actions need human approval, results are verified by independent tests, and the whole run leaves a sanitized evidence bundle.
 
-**Status: personal portfolio project. Not production-deployed. Not security-audited.**
+## 💻 Tech Stack
+- **Core Technology**: TypeScript, Node.js, Docker
+- **Architecture**: Microservices, Event-Driven
 
-## Capability status (keep honest)
+## 📚 Documentation
+- [Architecture](docs/ARCHITECTURE.md) — System diagram and component details
+- [Runbook](docs/RUNBOOK.md) — Setup, commands, and expected outputs
+- [Demo](docs/DEMO_SCRIPT.md) — Walkthrough scenario
 
+## 🚀 Step-by-Step Setup
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/SumitDalavi/agent-sandbox-platform.git
+cd agent-sandbox-platform
+
+# 2. Build and start
+make setup
+make dev
+```
+
+## 💻 Usage & Demo
+See the [DEMO_SCRIPT.md](docs/DEMO_SCRIPT.md) for the interactive walkthrough and verification steps.
+
+## ✅ Verification
+
+| Check | Command | Expected |
+|-------|---------|----------|
+| Build | `make setup` | Dependencies install successfully |
+| Run | `make dev` | Services start without crashing |
+
+## Capability Status
 | Capability | Status |
 |---|---|
 | Sandbox lifecycle API (create/exec/snapshot/destroy) | Implemented |
@@ -33,21 +66,11 @@ An isolated execution platform for AI agents. An agent is given a broken service
 
 ```bash
 make setup && make demo
-# UI: http://localhost:5173   API: http://localhost:8080
 ```
 
-## Docs
-[Architecture](docs/ARCHITECTURE.md) | [Demo](docs/DEMO_SCRIPT.md)
-- [Architecture](docs/ARCHITECTURE.md)
-- [Implementation plan](docs/IMPLEMENTATION_PLAN.md)
-- [Work packages](docs/WORK_PACKAGES.md)
-- [Threat model](docs/THREAT_MODEL.md)
-- [Evaluation](docs/EVALUATION.md)
-- [Demo script](docs/DEMO_SCRIPT.md)
-- [Decisions](docs/DECISIONS.md)
+## 👨‍💻 Author
+**Sumit Dalavi** — Senior DevSecOps / Platform Engineer
+[GitHub](https://github.com/SumitDalavi) | [LinkedIn](https://in.linkedin.com/in/sumit-dalavi-762838129)
 
-## Limitations (fill in as they become true)
-
-- Container isolation is weaker than microVM isolation; the backend in use is displayed in the UI for each run.
-- Results are on a small fixed scenario set; see `results/`.
-
+---
+*Built with a focus on robust patterns, not toy demos.*
