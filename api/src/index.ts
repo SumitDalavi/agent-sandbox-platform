@@ -138,6 +138,6 @@ app.put('/api/policy', authMiddleware, (req, res) => {
   res.json({ success: true, tokens: getPolicy() });
 });
 
-app.listen(3000, () => {
+app.listen(3000, '127.0.0.1', () => {
   console.log('Sandbox API running on port 3000');
 });
