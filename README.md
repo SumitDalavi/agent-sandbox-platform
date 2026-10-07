@@ -10,16 +10,16 @@ An isolated execution platform for AI agents. An agent is given a broken service
 
 | Capability | Status |
 |---|---|
-| Sandbox lifecycle API (create/exec/snapshot/destroy) | Planned |
-| Container backend (hardened) | Planned |
+| Sandbox lifecycle API (create/exec/snapshot/destroy) | Implemented |
+| Container backend (hardened) | Implemented |
 | MicroVM backend (Firecracker) | Planned (stretch; requires KVM host) |
-| Policy engine (allowlists, limits) | Planned |
-| Agent loop with real model calls | Planned |
-| Human approval gate | Planned |
-| Independent verification | Planned |
-| Evidence bundle + timeline UI | Planned |
-| Optional decision layer (risk signal) | Planned |
-| Decision benchmark | Planned |
+| Policy engine (allowlists, limits) | Implemented |
+| Agent loop with real model calls | Implemented |
+| Human approval gate | Implemented |
+| Independent verification | Implemented |
+| Evidence bundle + timeline UI | Implemented |
+| Optional decision layer (risk signal) | Implemented |
+| Decision benchmark | Implemented |
 
 ## Demo (3 minutes)
 
@@ -37,7 +37,7 @@ make setup && make demo
 ```
 
 ## Docs
-
+[Architecture](docs/ARCHITECTURE.md) | [Demo](docs/DEMO_SCRIPT.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Implementation plan](docs/IMPLEMENTATION_PLAN.md)
 - [Work packages](docs/WORK_PACKAGES.md)
