@@ -65,7 +65,7 @@ try {
 }
 
 const SERVER_NAME = "agent-sandbox-platform";
-const SERVER_VERSION = "0.1.0";
+const SERVER_VERSION = "0.2.0";
 
 const rl = readline.createInterface({
   input: process.stdin,
