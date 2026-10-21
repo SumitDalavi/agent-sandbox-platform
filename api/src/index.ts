@@ -38,7 +38,7 @@ app.post('/api/sandbox', authMiddleware, async (req, res) => {
 import crypto from 'crypto';
 
 app.post('/api/sandbox/:id/propose', authMiddleware, (req, res) => {
-  const { id } = req.params;
+  const id = req.params.id as string;
   const { cmd } = req.body;
   if (!cmd) return res.status(400).json({ error: 'cmd is required' });
   const proposalHash = crypto.createHash('sha256').update(cmd + Date.now().toString()).digest('hex');
@@ -63,7 +63,7 @@ app.post('/api/sandbox/:id/approve', authMiddleware, (req, res) => {
 });
 
 app.post('/api/sandbox/:id/execute', authMiddleware, async (req, res) => {
-  const { id } = req.params;
+  const id = req.params.id as string;
   const { cmd, proposalHash } = req.body;
   
   if (!sandboxes[id]) {
@@ -109,7 +109,7 @@ app.post('/api/sandbox/:id/execute', authMiddleware, async (req, res) => {
 });
 
 app.post('/api/sandbox/:id/simulate-cleanup-failure', authMiddleware, (req, res) => {
-  const { id } = req.params;
+  const id = req.params.id as string;
   const sandbox = sandboxes[id];
   if (!sandbox) return res.status(404).json({ error: 'Sandbox not found' });
   
@@ -121,7 +121,7 @@ app.post('/api/sandbox/:id/simulate-cleanup-failure', authMiddleware, (req, res)
 });
 
 app.delete('/api/sandbox/:id', authMiddleware, async (req, res) => {
-  const { id } = req.params;
+  const id = req.params.id as string;
   if (!sandboxes[id]) {
     return res.status(404).json({ error: 'Sandbox not found' });
   }
