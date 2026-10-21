@@ -7,10 +7,15 @@
     "sandbox-engine",
     "ui"
   ],
+  "bin": {
+    "agent-sandbox-mcp": "./mcp-server.js"
+  },
   "scripts": {
     "setup": "npm install",
     "build": "npm run build --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
+    "start": "npm run start --workspace=api",
+    "mcp": "node mcp-server.js",
     "clean": "rm -rf node_modules api/node_modules sandbox-engine/node_modules"
   },
   "devDependencies": {

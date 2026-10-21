@@ -1,0 +1,15 @@
+# Smithery.ai configuration for agent-sandbox-platform MCP server
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    properties:
+      timeoutMs:
+        type: number
+        description: "Default execution timeout in milliseconds"
+        default: 5000
+  commandFunction: |-
+    (config) => ({
+      command: 'node',
+      args: ['mcp-server.js']
+    })

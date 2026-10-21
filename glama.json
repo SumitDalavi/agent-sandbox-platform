@@ -1,0 +1,22 @@
+{
+  "$schema": "https://glama.ai/mcp/schemas/server.json",
+  "name": "agent-sandbox-platform",
+  "description": "Containerized runtime sandbox MCP server enforcing ephemeral Docker container isolation, execution timeouts, and deterministic cleanup for untrusted AI agent code execution.",
+  "maintainers": [
+    "SumitDalavi"
+  ],
+  "type": "mcp_server",
+  "status": "active",
+  "transport": [
+    "stdio"
+  ],
+  "keywords": [
+    "mcp",
+    "sandbox",
+    "docker",
+    "security",
+    "container-isolation",
+    "code-execution",
+    "ai-safety"
+  ]
+}

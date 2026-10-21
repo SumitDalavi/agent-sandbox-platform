@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "agent-sandbox-platform": {
+      "command": "node",
+      "args": ["mcp-server.js"]
+    }
+  }
+}
