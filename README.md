@@ -6,32 +6,41 @@
 [![SBOM](https://img.shields.io/badge/SBOM-SPDX%202.3-blueviolet?logo=spdx)](https://github.com/SumitDalavi/agent-sandbox-platform/releases/tag/v0.2.0)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
-> Containerized runtime sandbox orchestrator built with TypeScript/Node.js and Dockerode, enforcing ephemeral container isolation, execution timeout deadlines, and Model Context Protocol (MCP) server support for Glama.ai and Smithery.ai.
+> **Maturity:** Fully functional E2E Portfolio Project  
+> Distributed via GitHub Container Registry (`ghcr.io/sumitdalavi/agent-sandbox-platform:v0.2.0`) and tagged GitHub Releases with Anchore SPDX 2.3 SBOM and SHA-256 digest attestation.
+
+---
+
+## The Problem
+Modern distributed systems and AI agents require robust operational scaffolding. Simple CRUD apps or mock loops fail when subjected to real-world edge cases, asynchronous boundaries, and security constraints.
+
+## The Solution
+An isolated execution platform for AI agents. An agent is given a broken service and a bounded toolset inside a disposable sandbox. Every command passes through policy, risky actions need human approval, results are verified by independent tests, and the whole run leaves a sanitized evidence bundle.
 
 ---
 
 ## Key Capabilities & Architectural Highlights
-- **Model**: Context Protocol (MCP) server integration for Glama.ai, Smithery.ai, Claude Desktop, and Cursor
-- **Non-root**: ephemeral container execution (UID 1000) with ReadonlyRootfs and CapDrop ALL
-- **Hard**: 5-second deadline clock with guaranteed synchronous container destruction
-- **Full**: OCI container distribution via GitHub Container Registry (GHCR)
+- **Model Context Protocol (MCP)**: Server integration for Glama.ai, Smithery.ai, Claude Desktop, and Cursor.
+- **Non-root Execution**: Ephemeral container execution (UID 1000) with ReadonlyRootfs and CapDrop ALL.
+- **5-Second Hard Deadline**: Guaranteed synchronous container purge on timeout or completion.
+- **Full OCI Distribution**: Published to GitHub Container Registry (GHCR).
 
-## Technology Stack
-- **Languages & Frameworks:** TypeScript, Node.js 22, Dockerode, Model Context Protocol (MCP), Docker
+## 💻 Tech Stack
 - **Container Registry:** `ghcr.io/sumitdalavi/agent-sandbox-platform:v0.2.0`
+- **Security & Attestation:** Anchore SPDX 2.3 SBOM, SHA-256 Checksums
 - **License:** MIT Open Source
 
 ---
 
-## Documentation Index
-- [Architecture Specification](docs/ARCHITECTURE.md) — Detailed system diagrams, state machines, and design contracts.
-- [Production Runbook](docs/RUNBOOK.md) — Deployment instructions, configuration options, and operations.
-- [Demo Script & Walkthrough](docs/DEMO_SCRIPT.md) — Step-by-step verification scenario.
-- [Changelog](CHANGELOG.md) — Full release notes and version history.
+## 📚 Documentation Index
+- [Architecture Specification](docs/ARCHITECTURE.md) — System diagram, component contracts, and container distribution architecture.
+- [Production Runbook](docs/RUNBOOK.md) — Operational runbook, live execution commands, and verification recipes.
+- [Demo Walkthrough](docs/DEMO_SCRIPT.md) — Step-by-step interactive demonstration scenario.
+- [Changelog](CHANGELOG.md) — Full version history following Keep a Changelog and SemVer.
 
 ---
 
-## Quickstart & Installation
+## 🚀 Quickstart & Installation
 
 ### Option 1: Run with Docker Container (GHCR)
 ```bash
@@ -58,36 +67,88 @@ npx -y @smithery/cli install SumitDalavi/agent-sandbox-platform --client claude
 
 ### Option 3: Local Developer Setup
 ```bash
+# 1. Clone the repository
 git clone https://github.com/SumitDalavi/agent-sandbox-platform.git
 cd agent-sandbox-platform
+
+# 2. Build and start
 make setup
-make test
+make dev
 ```
 
 ---
 
-## Release & Security Verification
+## 🎮 Usage & Demo
+See [docs/DEMO_SCRIPT.md](docs/DEMO_SCRIPT.md) for the interactive walkthrough and verification steps.
 
-This repository adheres to the Portfolio Release Standard with verifiable supply-chain security attestations:
+## Demo (3 minutes)
 
-- **Distribution Archive:** `agent-sandbox-platform-v0.2.0.tar.gz`
-- **SHA-256 Digest:** `7dd742df9837a004857f65332d776906b8ef888b90a5bbde8fd33d0b198be3ea`
-- **Software Bill of Materials (SBOM):** Anchore SPDX 2.3 JSON specification (`sbom.spdx.json`).
+1. Start "Repair failing checkout service".
+2. Watch the agent's actual diagnostic commands stream in.
+3. See an unauthorized network request denied by policy.
+4. Review the proposed diff and approve export.
+5. See independent tests pass and the sandbox torn down.
 
-### Verification Commands
+---
+
+## ✅ Verification
+
+### Operational Verification
+| Check | Command | Expected |
+|---|---|---|
+| Build | `make setup` | Dependencies install successfully |
+| Run | `make dev` | Services start without crashing |
+| Test | `make test` | Behavioral test suite passes |
+
+### Cryptographic & Supply Chain Verification
+To verify the authentic origin, integrity, and software composition of release artifacts:
 ```bash
 # 1. Download Release Bundle & Checksums
 gh release download v0.2.0 --repo SumitDalavi/agent-sandbox-platform --pattern "*.tar.gz" --pattern "checksums.txt"
 
-# 2. Verify Cryptographic Integrity
+# 2. Verify SHA-256 Digest
 sha256sum -c checksums.txt
 
-# 3. Inspect SPDX SBOM
+# 3. Inspect SPDX 2.3 Software Bill of Materials
 gh release download v0.2.0 --repo SumitDalavi/agent-sandbox-platform --pattern "sbom.spdx.json"
 cat sbom.spdx.json | jq .spdxVersion
 ```
 
 ---
 
-## License
-MIT License. Copyright (c) 2026 Sumit Dalavi.
+## Capability Status
+| Capability | Status |
+|---|---|
+| Sandbox lifecycle API (create/exec/snapshot/destroy) | Implemented |
+| Container backend (hardened) | Implemented |
+| MicroVM backend (Firecracker) | Planned (stretch; requires KVM host) |
+| Policy engine (allowlists, limits) | Implemented |
+| Agent loop with real model calls | Implemented |
+| Human approval gate | Implemented |
+| Independent verification | Implemented |
+| Evidence bundle + timeline UI | Implemented |
+| Optional decision layer (risk signal) | Implemented |
+| Decision benchmark | Implemented |
+
+---
+
+## October 2026 Update: Behavioral Testing & Runtime Stabilization
+
+**Implementation Notes:**
+Refactored test.js to use tsx, implemented Docker boundary execution tests, and verified Sandbox creation/policy rejection endpoints.
+
+* Acceptance tests have been upgraded from static string-checks to end-to-end behavioral verifications.
+* API boundaries and execution layers (Docker, WebSockets, Temporal, etc.) are now explicitly exercised in tests.
+
+## Maturity Claims
+- **Implemented (Tested):** API isolation, launcher parity (tsx/ts-node), explicit failure propagation via simulate-cleanup-failure.
+- **Mocked:** The Docker failure simulation is injected during CI testing.
+- **Deferred:** Rootless containers and advanced network firewalls.
+
+---
+
+## 👨‍💻 Author
+**Sumit Dalavi** — Senior DevSecOps / Platform Engineer  
+[GitHub](https://github.com/SumitDalavi) | [LinkedIn](https://in.linkedin.com/in/sumit-dalavi-762838129)
+
+*Built with a focus on robust patterns, not toy demos.*
