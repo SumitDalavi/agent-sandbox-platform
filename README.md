@@ -6,7 +6,6 @@
 [![SBOM](https://img.shields.io/badge/SBOM-SPDX%202.3-blueviolet?logo=spdx)](https://github.com/SumitDalavi/agent-sandbox-platform/releases/tag/v0.2.0)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
-> **Maturity:** Fully functional E2E Portfolio Project  
 > Distributed via GitHub Container Registry (`ghcr.io/sumitdalavi/agent-sandbox-platform:v0.2.0`) and tagged GitHub Releases with Anchore SPDX 2.3 SBOM and SHA-256 digest attestation.
 
 ---
@@ -132,18 +131,17 @@ cat sbom.spdx.json | jq .spdxVersion
 
 ---
 
-## October 2026 Update: Behavioral Testing & Runtime Stabilization
+## 🔌 Dual-Mode Execution: Live-First with Graceful Mock Fallback
 
-**Implementation Notes:**
-Refactored test.js to use tsx, implemented Docker boundary execution tests, and verified Sandbox creation/policy rejection endpoints.
+This platform operates in **Dual-Mode**, dynamically selecting between live container execution and self-contained policy simulation based on environment variables:
 
-* Acceptance tests have been upgraded from static string-checks to end-to-end behavioral verifications.
-* API boundaries and execution layers (Docker, WebSockets, Temporal, etc.) are now explicitly exercised in tests.
+| Component | Environment Variable | Live Mode Behavior | Fallback Mode (Unset / Empty) |
+|---|---|---|---|
+| **Container Engine** | `DOCKER_HOST` / default socket | Launches isolated ephemeral Alpine containers via `/var/run/docker.sock` | Activates behavioral policy simulation when Docker daemon is unavailable |
+| **Authentication Gate** | `API_TOKEN` | Enforces enterprise Bearer token validation for all sandbox endpoints | Defaults to `valid-token` for local development |
+| **Policy Enforcement** | `POLICY_BLOCKED_TOKENS` | Ingests custom organizational command blacklist (comma-separated) | Enforces default safety tokens (`rm`, `curl`, `wget`, `nc`, `bash`) |
+| **Agent Tool Client** | `OPENAI_API_KEY` / `GEMINI_API_KEY` | Connects live autonomous agent loop to external model providers | Runs deterministic diagnostic test scripts against sandbox APIs |
 
-## Maturity Claims
-- **Implemented (Tested):** API isolation, launcher parity (tsx/ts-node), explicit failure propagation via simulate-cleanup-failure.
-- **Mocked:** The Docker failure simulation is injected during CI testing.
-- **Deferred:** Rootless containers and advanced network firewalls.
 
 ---
 
@@ -151,4 +149,7 @@ Refactored test.js to use tsx, implemented Docker boundary execution tests, and 
 **Sumit Dalavi** — Senior DevSecOps / Platform Engineer  
 [GitHub](https://github.com/SumitDalavi) | [LinkedIn](https://in.linkedin.com/in/sumit-dalavi-762838129)
 
-*Built with a focus on robust patterns, not toy demos.*
+---
+
+## 📄 License
+This project is licensed under the [MIT License](LICENSE). Copyright (c) 2026 Sumit Dalavi.
