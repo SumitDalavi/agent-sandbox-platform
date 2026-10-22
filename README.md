@@ -142,7 +142,6 @@ This platform operates in **Dual-Mode**, dynamically selecting between live cont
 | **Policy Enforcement** | `POLICY_BLOCKED_TOKENS` | Ingests custom organizational command blacklist (comma-separated) | Enforces default safety tokens (`rm`, `curl`, `wget`, `nc`, `bash`) |
 | **Agent Tool Client** | `OPENAI_API_KEY` / `GEMINI_API_KEY` | Connects live autonomous agent loop to external model providers | Runs deterministic diagnostic test scripts against sandbox APIs |
 
-
 ---
 
 ## 👨‍💻 Author
